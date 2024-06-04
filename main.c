@@ -43,7 +43,8 @@ int main(int argc, char *argv[]) {
     printf("[cli] server [%s:%d] is connected!",ipAddress,port);
     client(connect_socket);
     close(connect_socket);
-
+    printf("[cli] connfd is closed!");
+    printf("[cli] client is going to exit!");
     return 0;
 }
 
@@ -51,25 +52,27 @@ void client(int connect_socket){
     while(1){
         char command[6];
         int64_t operator_1, operator_2;
-        if (scanf("%5s", command) != 1) { //input problem?
+        if (scanf("%6s", command) != 1) {
             fprintf(stderr, "Input format is incorrect.\n");
-            continue; // 重新读取输入
+            continue;
         }
-        // 检查特殊命令
         if (strcmp(command, "EXIT") == 0) {
             printf("[cli] EXIT received\n");
-            break; // 退出循环，结束程序
+            break;
         } else if (strcmp(command, "SIGINT") == 0) {
             break;
-        } else {
+        } else if (strcmp(command, "ADD") == 0||strcmp(command, "SUB") == 0||strcmp(command, "DIV") == 0||strcmp(command, "MUL") == 0||strcmp(command, "MOD") == 0) {
             // 读取两个64位整数
-            if (scanf("%3s %" SCNd64 " %" SCNd64, command, &operator_1, &operator_2) == 2) {
+            if (scanf(" %" SCNd64 " %" SCNd64, &operator_1, &operator_2) == 2) {
             } else {
-                fprintf(stderr, "Input format is incorrect for ADD command.\n");
-                // 清除输入缓冲区中的错误输入
+                fprintf(stderr, "Input format is incorrect for ADD command.\n");// 清除输入缓冲区中的错误输入
                 int c;
                 while ((c = getchar()) != '\n' && c != EOF);
             }
+        } else {
+            fprintf(stderr, "Unknown command: %s\n", command);
+            int c;
+            while ((c = getchar()) != '\n' && c != EOF);
         }
 
         enum Operator operator;
@@ -164,6 +167,37 @@ void client(int connect_socket){
                 break;
             }
         }
-        //read()
+
+        char buffer[8];
+        ssize_t bytesRead = read(connect_socket, buffer, sizeof(buffer));
+        if (bytesRead < 0) {
+            perror("Error in read");
+        }
+        int64_t receivedData;
+        memcpy(&receivedData, buffer, sizeof(int64_t));
+        receivedData = be64toh(receivedData);
+
+        switch (operator) {
+            case ADD:{
+                printf("[rep_rcv] %ld + %ld = %ld",operator_1,operator_2,receivedData);
+                break;
+            }
+            case SUB:{
+                printf("[rep_rcv] %ld - %ld = %ld",operator_1,operator_2,receivedData);
+                break;
+            }
+            case MUL:{
+                printf("[rep_rcv] %ld * %ld = %ld",operator_1,operator_2,receivedData);
+                break;
+            }
+            case DIV:{
+                printf("[rep_rcv] %ld / %ld = %ld",operator_1,operator_2,receivedData);
+                break;
+            }
+            case MOD:{
+                printf("[rep_rcv] %ld %% %ld = %ld",operator_1,operator_2,receivedData);
+                break;
+            }
+        }
     }
 }
