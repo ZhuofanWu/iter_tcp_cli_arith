@@ -12,7 +12,7 @@
 #include <inttypes.h>
 
 void client(int connect_socket);
-uint64_t htobe64(uint64_t host_64bits);
+int64_t htobe64(int64_t host_64bits);
 uint64_t be64toh(uint64_t big_endian_64bits);
 enum Operator{
     ADD,
@@ -92,82 +92,39 @@ void client(int connect_socket){
             printf("Invalid instruction: %s\n", command);
         }
 
+        int32_t data;
         switch (operator) {
             case ADD:{
-                int32_t data=0x00000001;
-                int32_t networkData1 = htonl(data);
-                int64_t networkData2 = htobe64(operator_1);
-                int64_t networkData3 = htobe64(operator_2);
-                char *pdu = (char*) malloc(20);
-                memcpy(pdu, &networkData1, sizeof(networkData1));
-                memcpy(pdu + sizeof(networkData1), &networkData2, sizeof(networkData2));
-                memcpy(pdu + sizeof(networkData1) + sizeof(networkData2), &networkData3, sizeof(networkData3));
-                ssize_t bytesWritten = write(connect_socket, pdu, sizeof(pdu));
-                if (bytesWritten < 0) {
-                    perror("Error in write");
-                }
+                data=0x00000001;
                 break;
             }
             case SUB:{
-                int32_t data=0x00000002;
-                int32_t networkData1 = htonl(data);
-                int64_t networkData2 = htobe64(operator_1);
-                int64_t networkData3 = htobe64(operator_2);
-                char *pdu = (char*) malloc(20);
-                memcpy(pdu, &networkData1, sizeof(networkData1));
-                memcpy(pdu + sizeof(networkData1), &networkData2, sizeof(networkData2));
-                memcpy(pdu + sizeof(networkData1) + sizeof(networkData2), &networkData3, sizeof(networkData3));
-                ssize_t bytesWritten = write(connect_socket, pdu, sizeof(pdu));
-                if (bytesWritten < 0) {
-                    perror("Error in write");
-                }
+                data=0x00000002;
                 break;
             }
             case MUL:{
-                int32_t data=0x00000004;
-                int32_t networkData1 = htonl(data);
-                int64_t networkData2 = htobe64(operator_1);
-                int64_t networkData3 = htobe64(operator_2);
-                char *pdu = (char*) malloc(20);
-                memcpy(pdu, &networkData1, sizeof(networkData1));
-                memcpy(pdu + sizeof(networkData1), &networkData2, sizeof(networkData2));
-                memcpy(pdu + sizeof(networkData1) + sizeof(networkData2), &networkData3, sizeof(networkData3));
-                ssize_t bytesWritten = write(connect_socket, pdu, sizeof(pdu));
-                if (bytesWritten < 0) {
-                    perror("Error in write");
-                }
+                data=0x00000004;
                 break;
             }
             case DIV:{
-                int32_t data=0x00000008;
-                int32_t networkData1 = htonl(data);
-                int64_t networkData2 = htobe64(operator_1);
-                int64_t networkData3 = htobe64(operator_2);
-                char *pdu = (char*) malloc(20);
-                memcpy(pdu, &networkData1, sizeof(networkData1));
-                memcpy(pdu + sizeof(networkData1), &networkData2, sizeof(networkData2));
-                memcpy(pdu + sizeof(networkData1) + sizeof(networkData2), &networkData3, sizeof(networkData3));
-                ssize_t bytesWritten = write(connect_socket, pdu, sizeof(pdu));
-                if (bytesWritten < 0) {
-                    perror("Error in write");
-                }
+                data=0x00000008;
                 break;
             }
             case MOD:{
-                int32_t data=0x00000010;
-                int32_t networkData1 = htonl(data);
-                int64_t networkData2 = htobe64(operator_1);
-                int64_t networkData3 = htobe64(operator_2);
-                char *pdu = (char*) malloc(20);
-                memcpy(pdu, &networkData1, sizeof(networkData1));
-                memcpy(pdu + sizeof(networkData1), &networkData2, sizeof(networkData2));
-                memcpy(pdu + sizeof(networkData1) + sizeof(networkData2), &networkData3, sizeof(networkData3));
-                ssize_t bytesWritten = write(connect_socket, pdu, sizeof(pdu));
-                if (bytesWritten < 0) {
-                    perror("Error in write");
-                }
+                data=0x00000010;
                 break;
             }
+        }
+        int32_t networkData1 = htonl(data);
+        int64_t networkData2 = htobe64(operator_1);
+        int64_t networkData3 = htobe64(operator_2);
+        char *pdu = (char*) malloc(20);
+        memcpy(pdu, &networkData1, sizeof(networkData1));
+        memcpy(pdu + sizeof(networkData1), &networkData2, sizeof(networkData2));
+        memcpy(pdu + sizeof(networkData1) + sizeof(networkData2), &networkData3, sizeof(networkData3));
+        ssize_t bytesWritten = write(connect_socket, pdu, sizeof(pdu));
+        if (bytesWritten < 0) {
+            perror("Error in write");
         }
 
         char buffer[8];
@@ -204,8 +161,8 @@ void client(int connect_socket){
     }
 }
 
-uint64_t htobe64(uint64_t host_64bits) {
-    uint64_t result = 0;
+int64_t htobe64(int64_t host_64bits) {
+    int64_t result = 0;
     unsigned char *ptr = (unsigned char *)&result;
     ptr[0] = (host_64bits >> 56) & 0xFF;
     ptr[1] = (host_64bits >> 48) & 0xFF;
