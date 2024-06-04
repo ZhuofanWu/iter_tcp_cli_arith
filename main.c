@@ -9,8 +9,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <inttypes.h>
 
 void client(int connect_socket);
+enum Operator{
+    ADD,
+    SUB,
+    MUL,
+    DIV,
+    MOD
+};
 
 int main(int argc, char *argv[]) {
     char *ipAddress = argv[1];
@@ -32,6 +40,7 @@ int main(int argc, char *argv[]) {
         perror("Error in connect");
         exit(1);
     }
+    printf("[cli] server [%s:%d] is connected!",ipAddress,port);
     client(connect_socket);
     close(connect_socket);
 
@@ -40,6 +49,48 @@ int main(int argc, char *argv[]) {
 
 void client(int connect_socket){
     while(1){
+        char command[6];
+        int64_t operator_1, operator_2;
+        if (scanf("%5s", command) != 1) { //input problem?
+            fprintf(stderr, "Input format is incorrect.\n");
+            continue; // 重新读取输入
+        }
+        // 检查特殊命令
+        if (strcmp(command, "EXIT") == 0) {
+            printf("[cli] EXIT received\n");
+            break; // 退出循环，结束程序
+        } else if (strcmp(command, "SIGINT") == 0) {
+            break;
+        } else {
+            // 读取两个64位整数
+            if (scanf("%3s %" SCNd64 " %" SCNd64, command, &operator_1, &operator_2) == 2) {
+            } else {
+                fprintf(stderr, "Input format is incorrect for ADD command.\n");
+                // 清除输入缓冲区中的错误输入
+                int c;
+                while ((c = getchar()) != '\n' && c != EOF);
+            }
+        }
 
+        enum Operator operator;
+        if (strcmp(command, "ADD") == 0) {
+            operator = ADD;
+        } else if (strcmp(command, "SUB") == 0) {
+            operator = SUB;
+        } else if (strcmp(command, "MUL") == 0) {
+            operator = MUL;
+        } else if (strcmp(command, "DIV") == 0) {
+            operator = DIV;
+        } else if (strcmp(command, "MOD") == 0) {
+            operator = MOD;
+        } else {
+            printf("Invalid instruction: %s\n", command);
+        }
+
+        switch (operator) {
+            case ADD:{
+
+            }
+        }
     }
 }
