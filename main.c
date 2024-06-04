@@ -12,15 +12,13 @@
 #include <inttypes.h>
 
 void client(int connect_socket);
+void int64ToCharArray(int64_t num, char* arr);
+int64_t charArrayToInt64(const char* arr);
+void reverse_char(char* str);
 int64_t htobe64(int64_t host_64bits);
 uint64_t be64toh(uint64_t big_endian_64bits);
 enum Operator{
-    ADD,
-    SUB,
-    MUL,
-    DIV,
-    MOD
-};
+    ADD,SUB,MUL,DIV,MOD };
 
 int main(int argc, char *argv[]) {
     char *ipAddress = argv[1];
@@ -116,12 +114,16 @@ void client(int connect_socket){
             }
         }
         int32_t networkData1 = htonl(data);
-        int64_t networkData2 = htobe64(operator_1);
-        int64_t networkData3 = htobe64(operator_2);
+        char networkData_2[8];
+        int64ToCharArray(operator_1,networkData_2);
+        reverse_char(networkData_2);
+        char networkData_3[8];
+        int64ToCharArray(operator_2,networkData_3);
+        reverse_char(networkData_3);
         char *pdu = (char*) malloc(20);
-        memcpy(pdu, &networkData1, sizeof(networkData1));
-        memcpy(pdu + sizeof(networkData1), &networkData2, sizeof(networkData2));
-        memcpy(pdu + sizeof(networkData1) + sizeof(networkData2), &networkData3, sizeof(networkData3));
+        memcpy(pdu, &networkData1, 4);
+        memcpy(pdu + 4, &networkData_2, 8);
+        memcpy(pdu + 12, &networkData_3, 8);
         ssize_t bytesWritten = write(connect_socket, pdu, sizeof(pdu));
         if (bytesWritten < 0) {
             perror("Error in write");
@@ -158,6 +160,32 @@ void client(int connect_socket){
                 break;
             }
         }
+    }
+}
+void int64ToCharArray(int64_t num, char* arr) {
+    for (int i = 0; i < sizeof(int64_t); i++) {
+        arr[i] = (num >> (8 * i)) & 0xFF;
+    }
+}
+
+int64_t charArrayToInt64(const char* arr) {
+    int64_t num = 0;
+    for (int i = 0; i < sizeof(int64_t); i++) {
+        num |= ((int64_t)(arr[i] & 0xFF)) << (8 * i);
+    }
+    return num;
+}
+
+void reverse_char(char* str){
+    size_t len = strlen(str);
+    size_t start = 0;
+    size_t end = len - 1;
+    while (start < end) {
+        unsigned char temp = str[start];
+        str[start] = str[end];
+        str[end] = temp;
+        start++;
+        end--;
     }
 }
 
