@@ -40,11 +40,11 @@ int main(int argc, char *argv[]) {
         perror("Error in connect");
         exit(1);
     }
-    printf("[cli] server [%s:%d] is connected!",ipAddress,port);
+    printf("[cli] server [%s:%d] is connected!\n",ipAddress,port);
     client(connect_socket);
     close(connect_socket);
-    printf("[cli] connfd is closed!");
-    printf("[cli] client is going to exit!");
+    printf("[cli] connfd is closed!\n");
+    printf("[cli] client is going to exit!\n");
     return 0;
 }
 
@@ -179,23 +179,23 @@ void client(int connect_socket){
 
         switch (operator) {
             case ADD:{
-                printf("[rep_rcv] %ld + %ld = %ld",operator_1,operator_2,receivedData);
+                printf("[rep_rcv] %ld + %ld = %ld\n",operator_1,operator_2,receivedData);
                 break;
             }
             case SUB:{
-                printf("[rep_rcv] %ld - %ld = %ld",operator_1,operator_2,receivedData);
+                printf("[rep_rcv] %ld - %ld = %ld\n",operator_1,operator_2,receivedData);
                 break;
             }
             case MUL:{
-                printf("[rep_rcv] %ld * %ld = %ld",operator_1,operator_2,receivedData);
+                printf("[rep_rcv] %ld * %ld = %ld\n",operator_1,operator_2,receivedData);
                 break;
             }
             case DIV:{
-                printf("[rep_rcv] %ld / %ld = %ld",operator_1,operator_2,receivedData);
+                printf("[rep_rcv] %ld / %ld = %ld\n",operator_1,operator_2,receivedData);
                 break;
             }
             case MOD:{
-                printf("[rep_rcv] %ld %% %ld = %ld",operator_1,operator_2,receivedData);
+                printf("[rep_rcv] %ld %% %ld = %ld\n",operator_1,operator_2,receivedData);
                 break;
             }
         }
