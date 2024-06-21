@@ -1,6 +1,5 @@
 /* Created and modified by WuZhuofan.
  * All rights reserved.*/
-#define _XOPEN_SOURCE
 #include <stdio.h>
 #include <unistd.h>
 #include <stdint.h>
@@ -12,11 +11,11 @@
 #include <inttypes.h>
 
 void client(int connect_socket);
-void int64ToCharArray(int64_t num, char* arr);
-int64_t charArrayToInt64(const char* arr);
-void reverse_char(char* str);
-int64_t htobe64(int64_t host_64bits);
-uint64_t be64toh(uint64_t big_endian_64bits);
+int64_t hton64(int64_t host64);
+int64_t ntoh64(int64_t net64);
+int32_t hton32(int32_t host32);
+int32_t ntoh32(int32_t net32);
+
 enum Operator{
     ADD,SUB,MUL,DIV,MOD };
 
@@ -113,30 +112,28 @@ void client(int connect_socket){
                 break;
             }
         }
-        int32_t networkData1 = htonl(data);
-        char networkData_2[8];
-        int64ToCharArray(operator_1,networkData_2);
-        reverse_char(networkData_2);
-        char networkData_3[8];
-        int64ToCharArray(operator_2,networkData_3);
-        reverse_char(networkData_3);
-        char *pdu = (char*) malloc(20);
-        memcpy(pdu, &networkData1, 4);
-        memcpy(pdu + 4, &networkData_2, 8);
-        memcpy(pdu + 12, &networkData_3, 8);
+        data = hton32(data);
+        operator_1 = hton64(operator_1);
+        operator_2 = hton64(operator_2);
+
+        unsigned char pdu[20]={};
+        memcpy(pdu, &data, sizeof(int32_t));
+        memcpy(pdu + sizeof(int32_t), &operator_1, sizeof(int64_t));
+        memcpy(pdu + sizeof(int32_t) + sizeof(int64_t), &operator_2, sizeof(int64_t));
+
         ssize_t bytesWritten = write(connect_socket, pdu, sizeof(pdu));
         if (bytesWritten < 0) {
             perror("Error in write");
         }
 
+        int64_t receivedData;
         char buffer[8];
         ssize_t bytesRead = read(connect_socket, buffer, sizeof(buffer));
         if (bytesRead < 0) {
             perror("Error in read");
         }
-        int64_t receivedData;
         memcpy(&receivedData, buffer, sizeof(int64_t));
-        receivedData = be64toh(receivedData);
+        receivedData = ntoh64(receivedData);
 
         switch (operator) {
             case ADD:{
@@ -162,57 +159,55 @@ void client(int connect_socket){
         }
     }
 }
-void int64ToCharArray(int64_t num, char* arr) {
-    for (int i = 0; i < sizeof(int64_t); i++) {
-        arr[i] = (num >> (8 * i)) & 0xFF;
-    }
+
+int64_t hton64(int64_t host64) {
+    union {
+        int64_t i64;
+        unsigned char bytes[8];
+    } value;
+
+    value.i64 = host64;
+
+    unsigned char temp = value.bytes[0];
+    value.bytes[0] = value.bytes[7];
+    value.bytes[7] = temp;
+
+    temp = value.bytes[1];
+    value.bytes[1] = value.bytes[6];
+    value.bytes[6] = temp;
+
+    temp = value.bytes[2];
+    value.bytes[2] = value.bytes[5];
+    value.bytes[5] = temp;
+
+    temp = value.bytes[3];
+    value.bytes[3] = value.bytes[4];
+    value.bytes[4] = temp;
+
+    return value.i64;
 }
 
-int64_t charArrayToInt64(const char* arr) {
-    int64_t num = 0;
-    for (int i = 0; i < sizeof(int64_t); i++) {
-        num |= ((int64_t)(arr[i] & 0xFF)) << (8 * i);
-    }
-    return num;
+int64_t ntoh64(int64_t net64) {
+    return hton64(net64);
 }
 
-void reverse_char(char* str){
-    size_t len = strlen(str);
-    size_t start = 0;
-    size_t end = len - 1;
-    while (start < end) {
-        unsigned char temp = str[start];
-        str[start] = str[end];
-        str[end] = temp;
-        start++;
-        end--;
-    }
+int32_t hton32(int32_t host32) {
+    union {
+        int32_t i32;
+        unsigned char bytes[4];
+    } value;
+    value.i32=host32;
+    unsigned char temp = value.bytes[0];
+    value.bytes[0] = value.bytes[3];
+    value.bytes[3] = temp;
+
+    temp = value.bytes[1];
+    value.bytes[1] = value.bytes[2];
+    value.bytes[2] = temp;
+
+    return value.i32;
 }
 
-int64_t htobe64(int64_t host_64bits) {
-    int64_t result = 0;
-    unsigned char *ptr = (unsigned char *)&result;
-    ptr[0] = (host_64bits >> 56) & 0xFF;
-    ptr[1] = (host_64bits >> 48) & 0xFF;
-    ptr[2] = (host_64bits >> 40) & 0xFF;
-    ptr[3] = (host_64bits >> 32) & 0xFF;
-    ptr[4] = (host_64bits >> 24) & 0xFF;
-    ptr[5] = (host_64bits >> 16) & 0xFF;
-    ptr[6] = (host_64bits >> 8) & 0xFF;
-    ptr[7] = host_64bits & 0xFF;
-    return result;
-}
-
-uint64_t be64toh(uint64_t big_endian_64bits) {
-    uint64_t result = 0;
-    unsigned char *ptr = (unsigned char *)&big_endian_64bits;
-    result = ((uint64_t)ptr[0] << 56) |
-             ((uint64_t)ptr[1] << 48) |
-             ((uint64_t)ptr[2] << 40) |
-             ((uint64_t)ptr[3] << 32) |
-             ((uint64_t)ptr[4] << 24) |
-             ((uint64_t)ptr[5] << 16) |
-             ((uint64_t)ptr[6] << 8) |
-             (uint64_t)ptr[7];
-    return result;
+int32_t ntoh32(int32_t net32) {
+    return hton32(net32);
 }
