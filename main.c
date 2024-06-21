@@ -134,7 +134,8 @@ void client(int connect_socket){
         }
         memcpy(&receivedData, buffer, sizeof(int64_t));
         receivedData = ntoh64(receivedData);
-
+        operator_1 = ntoh64(operator_1);
+        operator_2 = ntoh64(operator_2);
         switch (operator) {
             case ADD:{
                 printf("[rep_rcv] %ld + %ld = %ld\n",operator_1,operator_2,receivedData);
