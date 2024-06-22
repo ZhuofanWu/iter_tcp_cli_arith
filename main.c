@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
         perror("Error in connect");
         exit(1);
     }
-    printf("[cli] server [%s:%d] is connected!\n",ipAddress,port);
+    printf("[cli] server[%s:%d] is connected!\n",ipAddress,port);
     client(connect_socket);
     close(connect_socket);
     printf("[cli] connfd is closed!\n");
