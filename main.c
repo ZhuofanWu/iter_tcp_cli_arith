@@ -1,5 +1,22 @@
 /* Created and modified by WuZhuofan.
  * All rights reserved.*/
+/* 2024-06-22 14:38:34 +0800`s submit ----Correctness 100.0
+ * This commit will be the last commit to Git&Github. Here are some of my thoughts:
+ * I wrote the basic framework of the programme before the exam, but the functions for byte order conversion were a big hurdle.
+ * You can see in my Git commit history that I've been struggling between using the official library and designing my own function.
+ * Later, I discovered the limitations of the official library and decided to design my own byte order conversion function.
+ * After completing the coding in the early morning of today, I tested the function and it ran smoothly.
+ * However, during the debugging process using the memcpy() function,
+ * I noticed that the data in the "pdu" variable changed from 255 to -1, even though they were both '\377'.
+ * Upon researching, I found out that this was due to the difference in "unsigned" representation.
+ * From that point on, all the difficulties were resolved.
+ *
+ * The biggest realization I gained from this experiment is that when encountering a bug,
+ * it is beneficial to isolate and debug the core functionality separately to identify the problem.
+ * Initially, I was debugging the client and server programs together, which made it difficult to pinpoint the exact error,
+ * and only increased the amount of unnecessary code.
+ * However, after reorganizing my thoughts and approach, the key problem was easily resolved.
+ */
 #include <stdio.h>
 #include <unistd.h>
 #include <stdint.h>
